@@ -1,0 +1,2008 @@
+{
+  "source": "C:\\Users\\mylaptop.ge\\Downloads\\Loialte_AI_Voice_Assistant_Proposal_Nika.docx",
+  "paragraph_count": 159,
+  "table_count": 18,
+  "records": [
+    {
+      "kind": "paragraph",
+      "index": 3,
+      "style": null,
+      "page_break": false,
+      "text": "AI Voice Assistant Platform"
+    },
+    {
+      "kind": "paragraph",
+      "index": 4,
+      "style": null,
+      "page_break": false,
+      "text": "Soft Debt Collection Calls"
+    },
+    {
+      "kind": "paragraph",
+      "index": 5,
+      "style": null,
+      "page_break": false,
+      "text": "Technical & Commercial Proposal"
+    },
+    {
+      "kind": "paragraph",
+      "index": 7,
+      "style": null,
+      "page_break": false,
+      "text": "Prepared for:  TBC Bank JSC"
+    },
+    {
+      "kind": "paragraph",
+      "index": 8,
+      "style": null,
+      "page_break": false,
+      "text": "Submitted by:  LLC Loialte"
+    },
+    {
+      "kind": "paragraph",
+      "index": 9,
+      "style": null,
+      "page_break": false,
+      "text": "RFI Reference:  0007249"
+    },
+    {
+      "kind": "paragraph",
+      "index": 10,
+      "style": null,
+      "page_break": false,
+      "text": "Date:  30 July 2026"
+    },
+    {
+      "kind": "paragraph",
+      "index": 15,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "1. Executive Summary"
+    },
+    {
+      "kind": "paragraph",
+      "index": 16,
+      "style": "ProposalLead",
+      "page_break": false,
+      "text": "Loialte proposes a production-oriented Georgian AI voice platform for outbound soft collections, integrated with TBC Bank's existing telephony and collections/CRM environment."
+    },
+    {
+      "kind": "paragraph",
+      "index": 17,
+      "style": "ProposalBody",
+      "page_break": false,
+      "text": "The solution is intentionally separated into a real-time voice layer, a conversational orchestration layer, and a deterministic policy-control layer. The language model supports understanding and controlled response drafting, but it does not decide customer eligibility, payment-plan terms, disclosure rights, or escalation outcomes. TBC systems remain the source of truth for customer, balance, policy and payment data."
+    },
+    {
+      "kind": "paragraph",
+      "index": 18,
+      "style": "ProposalBody",
+      "page_break": false,
+      "text": "The initial use case covers early-stage, pre-legal collection calls in Georgian: identity confirmation before disclosure; approved reminders; promise-to-pay capture; payment-date or installment discussion within Bank-defined rules; Bank-controlled SMS payment-link delivery; structured outcome write-back; and warm transfer or call termination for protected scenarios."
+    },
+    {
+      "kind": "paragraph",
+      "index": 19,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "2. Understanding of the Requirement and Success Criteria"
+    },
+    {
+      "kind": "paragraph",
+      "index": 20,
+      "style": "ProposalBody",
+      "page_break": false,
+      "text": "The RFI requires an AI/software layer only. TBC will continue to operate the dialer, carrier and telephony infrastructure. The vendor solution must connect through an approved SIP/media or API interface, retrieve only the minimum customer context required for the call, and write back structured outcomes in real time."
+    },
+    {
+      "kind": "table",
+      "index": 21,
+      "rows": [
+        [
+          "Objective",
+          "Proposed response",
+          "Success evidence"
+        ],
+        [
+          "Native Georgian conversation",
+          "Georgian STT/TTS benchmarked on telephone-quality audio, names, dates, spoken numbers and GEL amounts.",
+          "Bank-approved benchmark pack, UAT recordings and field-accuracy report."
+        ],
+        [
+          "Safe soft-collection logic",
+          "Deterministic identity, disclosure, negotiation and escalation controls outside the LLM.",
+          "100% pass on mandatory policy and negative-scenario tests."
+        ],
+        [
+          "Enterprise integration",
+          "Two-way CRM integration, TBC telephony interface, Bank SMS/payment-link API and human transfer.",
+          "Approved API specification, reconciliation report and end-to-end test evidence."
+        ],
+        [
+          "Business ownership",
+          "SSO/RBAC portal with maker-checker approval, version history, sandbox and rollback.",
+          "Business-user configuration UAT without vendor code changes."
+        ],
+        [
+          "Operational readiness",
+          "Monitoring, incident management, runbooks, DR, service reporting and 30-day support.",
+          "Production readiness review and signed operational acceptance checklist."
+        ],
+        [
+          "Reusable platform",
+          "Provider abstraction and modular campaign/use-case configuration.",
+          "Documented extension pattern and transparent expansion pricing."
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 23,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "3. Scope of Work"
+    },
+    {
+      "kind": "paragraph",
+      "index": 24,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "3.1 Included in the base implementation"
+    },
+    {
+      "kind": "paragraph",
+      "index": 25,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "One Georgian outbound soft-collections use case, including discovery, conversation design, configuration and controlled pilot."
+    },
+    {
+      "kind": "paragraph",
+      "index": 26,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "One approved integration to TBC telephony through SIP/media or a documented API interface; no carrier, dialer or PSTN service supplied by Loialte."
+    },
+    {
+      "kind": "paragraph",
+      "index": 27,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "One two-way collections/CRM integration for customer context, policy parameters, call status and outcome write-back."
+    },
+    {
+      "kind": "paragraph",
+      "index": 28,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "One Bank-controlled SMS/payment-link API integration; TBC authorizes, creates and delivers the message/link through approved systems."
+    },
+    {
+      "kind": "paragraph",
+      "index": 29,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Identity gating, approved reminders, promise-to-pay, permitted payment-plan discussion, callbacks, escalation and termination logic."
+    },
+    {
+      "kind": "paragraph",
+      "index": 30,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Business-user configuration portal with SSO/MFA integration, RBAC, maker-checker approval, versioning, sandbox, effective dates and rollback."
+    },
+    {
+      "kind": "paragraph",
+      "index": 31,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Operational reporting, monitoring, support, incident management, SLA reporting, documentation and training."
+    },
+    {
+      "kind": "paragraph",
+      "index": 32,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Security/privacy design pack, subprocessor register, DPA/DPIA support, retention configuration and production-readiness evidence."
+    },
+    {
+      "kind": "paragraph",
+      "index": 33,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "3.2 Explicit exclusions from the base price"
+    },
+    {
+      "kind": "paragraph",
+      "index": 34,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "TBC dialer, carrier/PSTN charges, telephone numbers, session border controller and core telephony operations."
+    },
+    {
+      "kind": "paragraph",
+      "index": 35,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "SMS carrier fees, payment processing fees and any Bank-side license or infrastructure cost."
+    },
+    {
+      "kind": "paragraph",
+      "index": 36,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Voice biometric authentication, autonomous credit decisions, legal-collection activity and unapproved discount/settlement authority."
+    },
+    {
+      "kind": "paragraph",
+      "index": 37,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Full enterprise BI/data-warehouse implementation, inbound calling, additional languages or additional CRM/telephony integrations."
+    },
+    {
+      "kind": "paragraph",
+      "index": 38,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Material custom development outside the signed backlog and acceptance criteria; such changes follow the approved change-control process."
+    },
+    {
+      "kind": "paragraph",
+      "index": 39,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "4. Proposed Technical Architecture"
+    },
+    {
+      "kind": "paragraph",
+      "index": 40,
+      "style": "ProposalBody",
+      "page_break": false,
+      "text": "The production baseline excludes web-originated calling from the initial scope. Calls are placed and managed by TBC's existing telephony environment. The AI layer receives the approved audio stream through a secure SIP/media interface and returns synthesized audio through the same controlled boundary."
+    },
+    {
+      "kind": "paragraph",
+      "index": 42,
+      "style": "ProposalCaption",
+      "page_break": false,
+      "text": "Figure 1. TBC-controlled telephony and systems of record integrated with Loialte's isolated AI/software layer."
+    },
+    {
+      "kind": "paragraph",
+      "index": 43,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "4.1 Primary production stack and fallback design"
+    },
+    {
+      "kind": "table",
+      "index": 44,
+      "rows": [
+        [
+          "Layer",
+          "Primary proposed component",
+          "Fallback / portability",
+          "Control boundary"
+        ],
+        [
+          "Telephony/media",
+          "TBC SIP/RTP or approved real-time media interface connected to a secure media gateway.",
+          "Alternative bank-approved media adapter without changing conversation logic.",
+          "TBC owns dialing, carrier and call routing."
+        ],
+        [
+          "Real-time orchestration",
+          "Pipecat-based service for turn state, barge-in, silence, timeouts and streaming events.",
+          "Containerized service with adapter interfaces; no dependency on a web-call channel.",
+          "Loialte AI runtime."
+        ],
+        [
+          "Speech recognition",
+          "ElevenLabs Scribe real-time Georgian STT, subject to Bank benchmark and security approval.",
+          "Google Cloud Speech-to-Text Chirp 2 for ka-GE or another Bank-approved provider.",
+          "Provider receives only approved audio segments and session metadata."
+        ],
+        [
+          "Language model",
+          "Bank-approved enterprise Gemini endpoint or equivalent behind a provider abstraction layer.",
+          "Equivalent enterprise LLM with the same structured response schema.",
+          "Advisory wording/intent only; no policy authority."
+        ],
+        [
+          "Policy/control",
+          "Deterministic FastAPI service with versioned Bank rules and explicit state machine.",
+          "No LLM fallback; failure triggers safe stop, retry or human escalation.",
+          "Authoritative disclosure, negotiation and escalation control."
+        ],
+        [
+          "Speech synthesis",
+          "ElevenLabs streaming Georgian TTS with telephony-compatible output.",
+          "Alternative Georgian TTS selected through the same benchmark suite.",
+          "Only policy-approved text is synthesized."
+        ],
+        [
+          "Integration",
+          "mTLS API service for CRM, SMS/payment-link, configuration and event write-back.",
+          "Adapter pattern for Bank-selected protocols and middleware.",
+          "TBC systems remain source of truth."
+        ],
+        [
+          "Operations",
+          "Central metrics, traces, structured logs, alerting and immutable audit evidence.",
+          "Export to TBC-approved SIEM/monitoring tools.",
+          "PII minimization and role-restricted access."
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 46,
+      "style": "ProposalNote",
+      "page_break": false,
+      "text": "Production gate: a named speech or model provider is enabled only after TBC approves its processing location, subprocessor terms, data-use/retention settings, security posture and Georgian telephone benchmark."
+    },
+    {
+      "kind": "paragraph",
+      "index": 47,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "4.2 End-to-end data and call flow"
+    },
+    {
+      "kind": "paragraph",
+      "index": 48,
+      "style": "ProposalNumber",
+      "page_break": false,
+      "text": "TBC creates an approved campaign or call instruction using a customer reference and policy version; only minimum required data is exposed."
+    },
+    {
+      "kind": "paragraph",
+      "index": 49,
+      "style": "ProposalNumber",
+      "page_break": false,
+      "text": "TBC telephony places the call and streams audio through the approved secure media interface."
+    },
+    {
+      "kind": "paragraph",
+      "index": 50,
+      "style": "ProposalNumber",
+      "page_break": false,
+      "text": "The Georgian STT service transcribes the caller turn; number/date/currency normalization generates structured slots with confidence scores."
+    },
+    {
+      "kind": "paragraph",
+      "index": 51,
+      "style": "ProposalNumber",
+      "page_break": false,
+      "text": "The orchestrator loads permitted customer context and requests an explicit policy decision before disclosure or negotiation."
+    },
+    {
+      "kind": "paragraph",
+      "index": 52,
+      "style": "ProposalNumber",
+      "page_break": false,
+      "text": "The language model receives a constrained state, approved facts and response schema; unsupported free-form commitments are rejected."
+    },
+    {
+      "kind": "paragraph",
+      "index": 53,
+      "style": "ProposalNumber",
+      "page_break": false,
+      "text": "Approved response text is synthesized and returned to the live call; barge-in stops playback and returns control to listening mode."
+    },
+    {
+      "kind": "paragraph",
+      "index": 54,
+      "style": "ProposalNumber",
+      "page_break": false,
+      "text": "Events and final disposition are written to CRM using idempotency keys, retries and reconciliation; no outcome exists only in vendor logs."
+    },
+    {
+      "kind": "paragraph",
+      "index": 55,
+      "style": "ProposalNumber",
+      "page_break": false,
+      "text": "For payment links, the platform invokes TBC's approved API. TBC generates/authorizes and sends the link; the vendor does not create payment credentials."
+    },
+    {
+      "kind": "paragraph",
+      "index": 56,
+      "style": "ProposalNumber",
+      "page_break": false,
+      "text": "For escalation, the live call and a structured summary are transferred to the Bank's approved human queue where technically supported."
+    },
+    {
+      "kind": "paragraph",
+      "index": 57,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "5. Conversation Design and Collections Controls"
+    },
+    {
+      "kind": "paragraph",
+      "index": 58,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "5.1 Identity and disclosure"
+    },
+    {
+      "kind": "paragraph",
+      "index": 59,
+      "style": "ProposalBody",
+      "page_break": false,
+      "text": "The base scope uses Bank-approved knowledge-based or account-context verification; voice biometrics is excluded. The exact questions, retry count and lockout behavior are configured by TBC. Until verification succeeds, the assistant may identify the Bank and request the approved verification information, but it may not reveal balance, overdue status, creditor details, payment terms or other protected account information."
+    },
+    {
+      "kind": "paragraph",
+      "index": 60,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Verification inputs are normalized and checked by deterministic rules or Bank APIs, not accepted solely from LLM interpretation."
+    },
+    {
+      "kind": "paragraph",
+      "index": 61,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Low-confidence speech is repeated back or confirmed explicitly before it is used in a critical field."
+    },
+    {
+      "kind": "paragraph",
+      "index": 62,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Failed verification, wrong-party contact and third-party answers result in neutral closure without debt disclosure."
+    },
+    {
+      "kind": "paragraph",
+      "index": 63,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Every identity decision records policy version, input source, result, timestamp and reason code."
+    },
+    {
+      "kind": "paragraph",
+      "index": 64,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "5.2 Scenario handling matrix"
+    },
+    {
+      "kind": "table",
+      "index": 65,
+      "rows": [
+        [
+          "Scenario",
+          "Required assistant behavior",
+          "CRM outcome",
+          "Safety control"
+        ],
+        [
+          "Verified right party",
+          "Proceed with approved reminder and permitted options.",
+          "VERIFIED / call outcome",
+          "Policy engine gates every offer."
+        ],
+        [
+          "Failed identity",
+          "Retry within limit; then end neutrally.",
+          "ID_FAILED",
+          "No debt/account disclosure."
+        ],
+        [
+          "Wrong party / third party",
+          "Do not identify debt purpose; close politely.",
+          "WRONG_PARTY",
+          "Suppress protected details."
+        ],
+        [
+          "Voicemail",
+          "Use only Bank-approved neutral message or leave no message.",
+          "VOICEMAIL",
+          "No balance or overdue disclosure."
+        ],
+        [
+          "No answer / busy",
+          "End attempt; schedule retry within contact policy.",
+          "NO_ANSWER / BUSY",
+          "Attempt/time-window limits."
+        ],
+        [
+          "Already paid",
+          "Acknowledge; do not confirm settlement without CRM; route for reconciliation.",
+          "PAYMENT_CLAIMED",
+          "No unsupported confirmation."
+        ],
+        [
+          "Promise to pay",
+          "Confirm amount/date; read back; obtain explicit acknowledgment.",
+          "PTP_CAPTURED",
+          "Date/amount validation and confirmation."
+        ],
+        [
+          "Payment plan request",
+          "Offer only CRM/policy-approved options; otherwise escalate.",
+          "PLAN_ACCEPTED / ESCALATE",
+          "No model-created terms."
+        ],
+        [
+          "Dispute",
+          "Stop collection discussion and warm-transfer or create priority callback.",
+          "DISPUTE",
+          "Mandatory escalation."
+        ],
+        [
+          "Hardship / vulnerability",
+          "Use approved empathetic wording; stop negotiation; escalate.",
+          "VULNERABILITY",
+          "Mandatory safe-route."
+        ],
+        [
+          "Stop-contact / opt-out",
+          "Acknowledge, end call and write suppression request immediately.",
+          "STOP_CONTACT",
+          "No further automated persuasion."
+        ],
+        [
+          "Legal representative / deceased / insolvency",
+          "Do not continue; capture minimum reason and escalate.",
+          "LEGAL_ESCALATION",
+          "Protected handling path."
+        ],
+        [
+          "Abuse / threat / emergency",
+          "Use safe termination wording; route according to Bank policy.",
+          "SAFETY_TERMINATION",
+          "No improvisation."
+        ],
+        [
+          "CRM/API unavailable",
+          "Do not disclose or negotiate; apologize and end/route safely.",
+          "TECHNICAL_FAILURE",
+          "Fail closed; queued reconciliation."
+        ],
+        [
+          "Low-confidence Georgian speech",
+          "Ask concise clarification; after limit, transfer or close.",
+          "LOW_CONFIDENCE",
+          "Confidence thresholds and retry cap."
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 67,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "5.3 Negotiation and promise-to-pay controls"
+    },
+    {
+      "kind": "paragraph",
+      "index": 68,
+      "style": "ProposalBody",
+      "page_break": false,
+      "text": "The Bank's CRM or policy service provides the eligible options for each customer. The AI assistant may explain and confirm those options, but it may not calculate a new discount, waive a fee, alter eligibility or extend a term. Each accepted promise is read back and confirmed before write-back."
+    },
+    {
+      "kind": "table",
+      "index": 69,
+      "rows": [
+        [
+          "Control",
+          "Authoritative source",
+          "Runtime rule",
+          "Evidence"
+        ],
+        [
+          "Eligible offer",
+          "TBC CRM/policy API",
+          "Offer ID and validity must be present before discussion.",
+          "Offer ID in call event and CRM."
+        ],
+        [
+          "Amount/date",
+          "TBC data + customer response",
+          "Normalize, validate range and confirm verbally.",
+          "Structured slots + confirmation flag."
+        ],
+        [
+          "Discount/installment",
+          "Versioned Bank rule",
+          "Reject any term outside permitted set.",
+          "Policy decision and reason code."
+        ],
+        [
+          "Promise to pay",
+          "Customer explicit confirmation",
+          "No inferred acceptance from ambiguous speech.",
+          "Timestamped PTP confirmation."
+        ],
+        [
+          "Payment link",
+          "TBC payment/SMS API",
+          "Vendor requests; Bank generates and sends.",
+          "Bank response ID and delivery status."
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 71,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "6. Integration Design"
+    },
+    {
+      "kind": "paragraph",
+      "index": 72,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "6.1 Required interfaces"
+    },
+    {
+      "kind": "table",
+      "index": 73,
+      "rows": [
+        [
+          "Interface",
+          "Direction",
+          "Minimum payload",
+          "Reliability and security"
+        ],
+        [
+          "Campaign / customer context",
+          "TBC → AI",
+          "Customer reference, contact data, balance/due date, language, contact history, policy/offer references.",
+          "mTLS/OAuth2, field allow-list, request ID, expiry and access logging."
+        ],
+        [
+          "Telephony / media",
+          "Bidirectional",
+          "Session metadata and approved real-time audio stream.",
+          "SIP/RTP or approved API, network allow-listing, encryption where supported, rate limits."
+        ],
+        [
+          "Policy / eligibility",
+          "Bidirectional",
+          "Identity result, permitted options, limits, escalation flags and policy version.",
+          "Fail-closed behavior, low timeout, no cached expired offer."
+        ],
+        [
+          "CRM outcome write-back",
+          "AI → TBC",
+          "Attempt, verification, disposition, PTP, callback, transfer, opt-out, technical error.",
+          "Idempotency key, retry queue, dead-letter handling and reconciliation."
+        ],
+        [
+          "Payment link / SMS request",
+          "AI → TBC",
+          "Customer reference, approved template ID, offer/payment reference and correlation ID.",
+          "Bank authorization and delivery; vendor stores only response ID/status."
+        ],
+        [
+          "Human transfer",
+          "AI → TBC",
+          "Live call, verified status, call summary, disclosed facts, escalation reason and priority.",
+          "Queue allow-list, timeout/fallback and minimal PII."
+        ],
+        [
+          "Configuration and audit",
+          "Bidirectional",
+          "Versioned scripts, rules, approvals, release metadata and exportable audit logs.",
+          "SSO/MFA, RBAC, maker-checker and immutable events."
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 75,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "6.2 API behavior and error handling"
+    },
+    {
+      "kind": "paragraph",
+      "index": 76,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Every call/session and outbound write uses a correlation ID; every write-back uses an idempotency key."
+    },
+    {
+      "kind": "paragraph",
+      "index": 77,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Transient errors use bounded exponential retry; permanent errors are routed to a dead-letter queue and surfaced to operations."
+    },
+    {
+      "kind": "paragraph",
+      "index": 78,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "CRM reconciliation compares vendor events with Bank acknowledgments and reports unmatched outcomes."
+    },
+    {
+      "kind": "paragraph",
+      "index": 79,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Timeouts in identity, policy, customer-context or payment-link services trigger fail-closed behavior; protected information is not disclosed."
+    },
+    {
+      "kind": "paragraph",
+      "index": 80,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Schemas are versioned and backward-compatible during agreed migration periods; material changes require joint approval."
+    },
+    {
+      "kind": "paragraph",
+      "index": 81,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "API secrets are stored in an approved secrets manager, rotated and never embedded in prompts, scripts or source code."
+    },
+    {
+      "kind": "paragraph",
+      "index": 82,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "7. Information Security, Privacy and Regulatory Compliance"
+    },
+    {
+      "kind": "paragraph",
+      "index": 83,
+      "style": "ProposalLead",
+      "page_break": false,
+      "text": "The proposed control set is designed for TBC due diligence and contractual approval; it does not assume that any third-party service is acceptable before the Bank completes its review."
+    },
+    {
+      "kind": "table",
+      "index": 84,
+      "rows": [
+        [
+          "Control area",
+          "Proposed baseline",
+          "Go-live evidence",
+          "TBC decision/dependency"
+        ],
+        [
+          "Deployment model",
+          "Isolated vendor-managed environment in a Bank-approved region, or Bank-approved private deployment; no public administrative endpoints.",
+          "Approved architecture, network diagram and asset inventory.",
+          "Final hosting region and connectivity."
+        ],
+        [
+          "Data minimization",
+          "Only campaign-required fields; tokenized customer reference where feasible; no full customer profile in prompts.",
+          "Data-flow map and field-level inventory.",
+          "Approved data set and lawful purpose."
+        ],
+        [
+          "Encryption",
+          "TLS 1.2+ in transit; AES-256-equivalent at rest; managed KMS and documented key rotation.",
+          "Configuration evidence and key-management procedure.",
+          "Bank-approved cipher/network standards."
+        ],
+        [
+          "Identity and access",
+          "TBC SSO using SAML/OIDC where available, MFA, RBAC, least privilege, joiner/mover/leaver controls and quarterly access review.",
+          "Role matrix and access-review record.",
+          "Identity-provider integration."
+        ],
+        [
+          "Audit logging",
+          "Tamper-evident admin, configuration, policy, call-event, data-access and security logs with synchronized timestamps.",
+          "Sample audit trail and export test.",
+          "Retention/SIEM integration."
+        ],
+        [
+          "Model data use",
+          "Customer data may not be used for provider model training; zero/limited retention settings required where supported.",
+          "Provider terms, settings and contractual commitment.",
+          "Provider acceptance."
+        ],
+        [
+          "Subprocessors",
+          "Register lists service, purpose, fields, processing location, retention and transfer mechanism; changes require notice/approval.",
+          "Signed register and due-diligence pack.",
+          "Approval of each production subprocessor."
+        ],
+        [
+          "Retention and deletion",
+          "TBC-approved schedule; proposed default: audio/transcript 90 days and security/audit events 13 months, with legal-hold support.",
+          "Retention configuration and deletion test.",
+          "Final legal/business retention periods."
+        ],
+        [
+          "Vulnerability management",
+          "Dependency/container scanning, critical patch process, pre-go-live penetration test and annual retest.",
+          "Scan reports, remediation evidence and penetration-test summary.",
+          "Bank severity/remediation policy."
+        ],
+        [
+          "Security incident",
+          "24/7 P1 path; notify TBC without undue delay and no later than one hour for confirmed P1 impact; preserve evidence and support RCA.",
+          "Incident plan and tabletop exercise.",
+          "Contractual notification wording."
+        ],
+        [
+          "Backup and recovery",
+          "Encrypted backups, point-in-time recovery for state/configuration data, tested restoration and documented exit/rollback.",
+          "Restore test and DR runbook.",
+          "Final RTO/RPO approval."
+        ],
+        [
+          "Exit and deletion",
+          "Export Bank-owned data/configuration, revoke access, delete vendor copies and issue deletion confirmation after contract end.",
+          "Exit plan and sample certificate.",
+          "Required export format and timing."
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 86,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "7.1 Applicable framework"
+    },
+    {
+      "kind": "paragraph",
+      "index": 87,
+      "style": "ProposalBody",
+      "page_break": false,
+      "text": "The final solution and contract will be reviewed against the Law of Georgia on Personal Data Protection (as amended), applicable National Bank of Georgia requirements and guidance for cloud outsourcing, the NBG debt-collection ethics/consumer-protection framework, and TBC's internal security, outsourcing, privacy, records-management and model-risk requirements."
+    },
+    {
+      "kind": "paragraph",
+      "index": 88,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Law of Georgia on Personal Data Protection (Matsne)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 89,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "NBG cloud-outsourcing guidance notice"
+    },
+    {
+      "kind": "paragraph",
+      "index": 90,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "NBG debt-collection ethics and consumer-protection notice"
+    },
+    {
+      "kind": "paragraph",
+      "index": 91,
+      "style": "ProposalNote",
+      "page_break": false,
+      "text": "Responsibility split: Loialte supplies evidence and implements agreed controls. TBC remains responsible for its regulatory classification, lawful basis, customer disclosures, outsourcing approval and final risk acceptance."
+    },
+    {
+      "kind": "paragraph",
+      "index": 92,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "8. Business-User Configurability and Change Governance"
+    },
+    {
+      "kind": "paragraph",
+      "index": 93,
+      "style": "ProposalBody",
+      "page_break": false,
+      "text": "Routine campaign and script changes are managed through a controlled portal, without vendor engineering. Compliance-sensitive rules remain subject to maker-checker approval and cannot be promoted directly from draft to production by one user."
+    },
+    {
+      "kind": "table",
+      "index": 94,
+      "rows": [
+        [
+          "Configurable item",
+          "Business action",
+          "Required control",
+          "Release behavior"
+        ],
+        [
+          "Tone, persona and approved phrases",
+          "Edit within approved content blocks.",
+          "Maker-checker and prohibited-phrase validation.",
+          "Preview and sandbox call before activation."
+        ],
+        [
+          "Campaign time windows and attempt limits",
+          "Set within Bank policy ranges.",
+          "Validation against contact policy.",
+          "Effective date and automatic expiry."
+        ],
+        [
+          "Identity prompts",
+          "Select approved question set and retry limit.",
+          "Compliance approval required.",
+          "Versioned release; fail closed."
+        ],
+        [
+          "Reminder and PTP flow",
+          "Edit approved wording and routing.",
+          "Regression test for slots/dispositions.",
+          "Staged rollout and rollback."
+        ],
+        [
+          "Negotiation parameters",
+          "Reference approved CRM/policy offers.",
+          "Cannot exceed server-side limits.",
+          "Policy version bound to each call."
+        ],
+        [
+          "Escalation rules",
+          "Configure queue/reason mapping.",
+          "Security/operations approval.",
+          "Fallback queue and timeout required."
+        ],
+        [
+          "Reporting dimensions",
+          "Choose campaign views and exports.",
+          "RBAC and PII minimization.",
+          "No policy impact."
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 96,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Draft → review → approval → scheduled activation → monitored rollout → close/rollback is the mandatory lifecycle."
+    },
+    {
+      "kind": "paragraph",
+      "index": 97,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Every version stores author, approver, timestamp, effective period, linked test evidence and rollback target."
+    },
+    {
+      "kind": "paragraph",
+      "index": 98,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "A production change that affects disclosure, identity, negotiation or escalation requires regression testing and TBC approval."
+    },
+    {
+      "kind": "paragraph",
+      "index": 99,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Emergency changes use a separate authorized path and require retrospective review on the next business day."
+    },
+    {
+      "kind": "paragraph",
+      "index": 100,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "9. Implementation Plan"
+    },
+    {
+      "kind": "paragraph",
+      "index": 101,
+      "style": "ProposalBody",
+      "page_break": false,
+      "text": "The ten-week schedule starts when the prerequisites in Section 14 are available. Each phase ends with defined evidence and a Bank approval gate. Delays in Bank-owned access, interfaces or policy decisions move the dependent milestone through the joint change-control process."
+    },
+    {
+      "kind": "table",
+      "index": 102,
+      "rows": [
+        [
+          "Phase / timing",
+          "Loialte activities",
+          "Key deliverables",
+          "TBC dependency",
+          "Completion / gate"
+        ],
+        [
+          "0. Mobilization\nPre-kick-off",
+          "Confirm governance, access process, backlog and environments.",
+          "Mobilization checklist; RAID log; detailed plan.",
+          "Named owners; sandbox; interface documents.",
+          "Kick-off readiness approved."
+        ],
+        [
+          "1. Discovery & controls\nWeeks 1-2",
+          "Map journeys, policy states, scenarios, data fields and acceptance criteria.",
+          "Conversation design; policy rulebook; requirements matrix; data inventory.",
+          "Approved scripts, rules, customer data and escalation policy.",
+          "Scope/design baseline signed."
+        ],
+        [
+          "2. Architecture & security\nWeeks 2-3",
+          "HLD/LLD, deployment, media/API design, threat model and provider due diligence.",
+          "Architecture; API spec; data map; subprocessor register; security plan.",
+          "Connectivity/security standards and review attendance.",
+          "Architecture/security design approved."
+        ],
+        [
+          "3. Build & integration\nWeeks 3-6",
+          "Configure STT/TTS/LLM adapters; implement policy, CRM, telephony, SMS and portal.",
+          "Integrated test platform; schemas; configuration workflow; monitoring.",
+          "Working sandbox APIs, SIP/media access, test users and queues.",
+          "System integration test entry."
+        ],
+        [
+          "4. Test & tune\nWeeks 6-8",
+          "Functional, negative, security, load, DR, Georgian benchmark and business UAT.",
+          "Test report; defects; benchmark results; runbooks; training.",
+          "UAT team, approved test cases, test data and security review.",
+          "UAT/security exit approved."
+        ],
+        [
+          "5. Controlled pilot\nWeek 9",
+          "Limited live cohort, daily review, safe rollback and targeted tuning.",
+          "Pilot dashboard; incident log; call review; KPI and risk report.",
+          "Approved cohort, call windows, agents and operational support.",
+          "Pilot exit/go-live recommendation."
+        ],
+        [
+          "6. Go-live decision\nWeek 10",
+          "Close critical defects, rehearse cutover/rollback and complete readiness review.",
+          "Production readiness pack; cutover and rollback plan; acceptance record.",
+          "Formal go/no-go and production access.",
+          "Go-live approval."
+        ],
+        [
+          "7. Hypercare\n30 days after go-live",
+          "Enhanced monitoring, daily triage, rapid tuning and weekly service review.",
+          "Hypercare reports; stabilized backlog; operations handover.",
+          "Business/IT participation in review and decisions.",
+          "Hypercare exit approved."
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 104,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "9.1 Mandatory deliverables"
+    },
+    {
+      "kind": "paragraph",
+      "index": 105,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Requirements traceability/compliance matrix and approved scope baseline."
+    },
+    {
+      "kind": "paragraph",
+      "index": 106,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "High-level and low-level architecture, data-flow map, threat model and integration specifications."
+    },
+    {
+      "kind": "paragraph",
+      "index": 107,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Conversation design, policy rulebook, scenario matrix and approved Georgian content library."
+    },
+    {
+      "kind": "paragraph",
+      "index": 108,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Security/privacy pack: subprocessor register, data inventory, retention schedule, DPA/DPIA support and vulnerability evidence."
+    },
+    {
+      "kind": "paragraph",
+      "index": 109,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Test strategy and reports covering functional, negative, integration, performance, security, DR and UAT."
+    },
+    {
+      "kind": "paragraph",
+      "index": 110,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Operational runbook, monitoring/alert catalogue, incident process, backup/restore, cutover, rollback and exit plan."
+    },
+    {
+      "kind": "paragraph",
+      "index": 111,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Business-user and operations training, administrator guide and production readiness checklist."
+    },
+    {
+      "kind": "paragraph",
+      "index": 112,
+      "style": "ProposalBullet",
+      "page_break": false,
+      "text": "Pilot report, signed acceptance decisions and post-go-live service reporting template."
+    },
+    {
+      "kind": "paragraph",
+      "index": 113,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "10. Managed Operations, Support and SLA"
+    },
+    {
+      "kind": "paragraph",
+      "index": 114,
+      "style": "ProposalBody",
+      "page_break": false,
+      "text": "Automated monitoring operates continuously. lower priorities follow the agreed support window. The SLA begins after production acceptance and excludes documented TBC-side outages, carrier failures and approved maintenance."
+    },
+    {
+      "kind": "paragraph",
+      "index": 115,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "Incident severity and targets"
+    },
+    {
+      "kind": "table",
+      "index": 116,
+      "rows": [
+        [
+          "Priority",
+          "Definition",
+          "Acknowledge",
+          "Restore/workaround",
+          "Target resolution",
+          "Updates / RCA"
+        ],
+        [
+          "P1 Critical",
+          "Production unavailable; prohibited disclosure risk; material security/privacy impact; widespread call failure.",
+          "30 min",
+          "4 h",
+          "1 business day or agreed recovery plan",
+          "30-min updates; RCA in 5 business days"
+        ],
+        [
+          "P2 High",
+          "Major degradation or key flow unavailable with material impact; workaround limited.",
+          "1 h",
+          "8 h",
+          "2 business days",
+          "2-hour updates; RCA in 7 business days if material"
+        ],
+        [
+          "P3 Medium",
+          "Non-critical defect with workaround; limited users/campaign.",
+          "1 business day",
+          "2 business days",
+          "5 business days",
+          "Daily or as agreed"
+        ],
+        [
+          "P4 Request",
+          "Information, cosmetic issue or standard configuration request.",
+          "2 business days",
+          "Planned",
+          "Agreed backlog/release",
+          "On status change"
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 119,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "11. Reporting and Operational Visibility"
+    },
+    {
+      "kind": "paragraph",
+      "index": 120,
+      "style": "ProposalBody",
+      "page_break": false,
+      "text": "The base service includes operational reporting rather than a full enterprise BI program. Authorized users can review/export campaign and call outcomes, while access to recordings, transcripts and customer-level data is restricted by role."
+    },
+    {
+      "kind": "table",
+      "index": 121,
+      "rows": [
+        [
+          "Report/view",
+          "Core measures",
+          "Frequency / format",
+          "Access control"
+        ],
+        [
+          "Campaign operations",
+          "Loaded, attempted, connected, verified, completed, retried and failed.",
+          "Near-real-time view; CSV/API export.",
+          "Campaign and operations roles."
+        ],
+        [
+          "Collections outcomes",
+          "PTP, plan accepted, payment-link request/status, callback, transfer and disposition.",
+          "Daily/monthly; customer-level export by approval.",
+          "Collections-authorized roles."
+        ],
+        [
+          "Voice quality",
+          "WER/slot errors, fallback, clarification, latency, TTS QA and failure reason.",
+          "Pilot daily; production weekly/monthly.",
+          "AI/QA and product roles."
+        ],
+        [
+          "Compliance/safety",
+          "Identity failures, blocked disclosure, stop-contact, escalation and policy rejections.",
+          "Daily alert + monthly summary.",
+          "Compliance, product and audit roles."
+        ],
+        [
+          "Service/SLA",
+          "Availability, incidents, response/restoration, changes, capacity and service credits.",
+          "Monthly PDF/CSV and review meeting.",
+          "Service management."
+        ],
+        [
+          "Audit evidence",
+          "Configuration, approval, policy, access, call-event and data-deletion actions.",
+          "On demand; controlled export.",
+          "Audit/security roles."
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 123,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "12. Commercial Proposal"
+    },
+    {
+      "kind": "paragraph",
+      "index": 124,
+      "style": "ProposalLead",
+      "page_break": false,
+      "text": "All prices below are in USD and include VAT. The offer is valid for 60 calendar days from 30 July 2026."
+    },
+    {
+      "kind": "paragraph",
+      "index": 125,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "12.1 Price schedule and Year-1 TCO"
+    },
+    {
+      "kind": "table",
+      "index": 126,
+      "rows": [
+        [
+          "No.",
+          "Service",
+          "Price incl. VAT",
+          "Commercial basis"
+        ],
+        [
+          "1",
+          "10-week implementation",
+          "USD 18,000 one-time",
+          "Discovery, design, integrations, platform build, security/testing, pilot and go-live readiness."
+        ],
+        [
+          "2",
+          "Managed service",
+          "USD 8,000/month",
+          "Platform operation, included third-party AI usage within limits, monitoring, standard support and monthly reporting after go-live."
+        ],
+        [
+          "3",
+          "Approved out-of-scope professional services",
+          "USD 350/man-day",
+          "Only against TBC-approved estimate/change request."
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 128,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "12.2 Base-capacity definition"
+    },
+    {
+      "kind": "table",
+      "index": 129,
+      "rows": [
+        [
+          "Capacity item",
+          "Included limit per calendar month",
+          "Counting rule"
+        ],
+        [
+          "Unique debtor accounts",
+          "Up to 20,000",
+          "One customer/account loaded to an approved campaign; duplicates are deduplicated by Bank/customer reference."
+        ],
+        [
+          "Outbound call attempts",
+          "Up to 40,000",
+          "Each dial attempt counts, including retries; average planning assumption is up to two attempts per account."
+        ],
+        [
+          "Connected AI minutes",
+          "Up to 50,000",
+          "Measured from AI session connection to termination; rounded to the next whole second, aggregated monthly."
+        ],
+        [
+          "Concurrent live sessions",
+          "Up to 20",
+          "Simultaneous active AI conversations under agreed performance test."
+        ],
+        [
+          "Active campaigns",
+          "Up to 5",
+          "Campaigns using the same approved collections use case, integrations and Georgian language."
+        ],
+        [
+          "Integrations/language",
+          "1 telephony + 1 CRM + 1 SMS/payment API; Georgian",
+          "Additional integration, language or distinct use case is optional scope."
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 131,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "12.3 Payment schedule"
+    },
+    {
+      "kind": "table",
+      "index": 132,
+      "rows": [
+        [
+          "Payment",
+          "Trigger",
+          "Amount"
+        ],
+        [
+          "Implementation milestone 1",
+          "Contract signature and mobilization",
+          "40% of implementation fee"
+        ],
+        [
+          "Implementation milestone 2",
+          "Architecture, conversation and integration-design approval",
+          "30% of implementation fee"
+        ],
+        [
+          "Implementation milestone 3",
+          "UAT exit / pilot readiness acceptance",
+          "30% of implementation fee"
+        ],
+        [
+          "Managed service",
+          "Monthly from the first month following production go-live",
+          "Monthly"
+        ],
+        [
+          "Overage/optional services",
+          "Monthly actuals or accepted milestone",
+          "Per approved schedule/change request"
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 134,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "13. Assumptions, Dependencies and Change Control"
+    },
+    {
+      "kind": "table",
+      "index": 135,
+      "rows": [
+        [
+          "ID",
+          "Assumption / dependency",
+          "Owner",
+          "Impact if unavailable"
+        ],
+        [
+          "A1",
+          "TBC provides telephony/dialer operation and approved SIP/media/API access.",
+          "TBC",
+          "Media integration and live-call schedule move."
+        ],
+        [
+          "A2",
+          "TBC provides documented CRM/policy/SMS APIs, sandbox, test credentials and representative test data.",
+          "TBC",
+          "Integration/test milestones move."
+        ],
+        [
+          "A3",
+          "TBC approves scripts, identity method, disclosure wording, contact policy, offer limits and escalation rules by end of Week 2.",
+          "TBC",
+          "Design baseline and dependent build move."
+        ],
+        [
+          "A4",
+          "TBC provides named business, IT, telephony, security, privacy and UAT owners with timely decision authority.",
+          "TBC",
+          "Approval gates and pilot readiness move."
+        ],
+        [
+          "A5",
+          "Production providers and processing locations pass TBC security, privacy, outsourcing and procurement review.",
+          "Joint",
+          "Provider fallback or deployment redesign may be required."
+        ],
+        [
+          "A6",
+          "One Georgian use case and defined base integrations/capacity apply to the quoted implementation.",
+          "Joint",
+          "Additional scope uses change control/expansion pricing."
+        ],
+        [
+          "A7",
+          "No voice biometrics, autonomous credit decision, legal collection or unapproved financial discretion is required.",
+          "TBC",
+          "Separate legal/technical scope and pricing."
+        ],
+        [
+          "A8",
+          "TBC controls customer eligibility, lawful basis, suppression lists and Bank-side records.",
+          "TBC",
+          "Calls cannot proceed safely without authoritative data."
+        ],
+        [
+          "A9",
+          "Pilot cohort and calling windows are approved and operational human queues are available.",
+          "TBC",
+          "Pilot/go-live decision moves."
+        ],
+        [
+          "A10",
+          "The formal contract prevails over proposal text for legal liability, SLA, data processing and security obligations.",
+          "Joint",
+          "Final language resolved before signature."
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 137,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "13.1 Change-control process"
+    },
+    {
+      "kind": "paragraph",
+      "index": 138,
+      "style": "ProposalNumber",
+      "page_break": false,
+      "text": "Either party raises a change with business rationale, scope, urgency and requested date."
+    },
+    {
+      "kind": "paragraph",
+      "index": 139,
+      "style": "ProposalNumber",
+      "page_break": false,
+      "text": "Loialte provides impact on requirements, architecture, security, schedule, capacity, SLA and price."
+    },
+    {
+      "kind": "paragraph",
+      "index": 140,
+      "style": "ProposalNumber",
+      "page_break": false,
+      "text": "TBC accepts, rejects or reprioritizes the change through the named authority; no chargeable work starts without approval."
+    },
+    {
+      "kind": "paragraph",
+      "index": 141,
+      "style": "ProposalNumber",
+      "page_break": false,
+      "text": "Approved changes update the backlog, requirements traceability, test evidence, release plan and commercial schedule."
+    },
+    {
+      "kind": "paragraph",
+      "index": 142,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "14. Functional Requirements Compliance Matrix"
+    },
+    {
+      "kind": "paragraph",
+      "index": 143,
+      "style": "ProposalBody",
+      "page_break": false,
+      "text": "This proposal-level matrix is based on RFI 0007249 scope and key requirements. It is intended to accompany, not replace, any separate Bank-issued functional requirements table; the Bank's line-by-line document remains controlling if provided."
+    },
+    {
+      "kind": "table",
+      "index": 144,
+      "rows": [
+        [
+          "ID",
+          "Requirement",
+          "Status",
+          "Proposed response",
+          "Dependency / evidence"
+        ],
+        [
+          "FR-01",
+          "Outbound Georgian soft-collection voice agent",
+          "Compliant",
+          "Configured Georgian agent and approved conversation flows.",
+          "TBC policy/content approval."
+        ],
+        [
+          "FR-02",
+          "Use TBC telephony; vendor supplies AI/software only",
+          "Compliant",
+          "Secure SIP/media/API integration; no vendor carrier/dialer.",
+          "TBC interface/access."
+        ],
+        [
+          "FR-03",
+          "Two-way real-time collections/CRM integration",
+          "Compliant",
+          "Context retrieval plus idempotent outcome write-back and reconciliation.",
+          "TBC APIs/sandbox."
+        ],
+        [
+          "FR-04",
+          "Natural Georgian STT/TTS for telephone audio",
+          "Compliant subject to UAT",
+          "Primary/fallback providers benchmarked on Bank corpus.",
+          "TBC benchmark approval."
+        ],
+        [
+          "FR-05",
+          "Georgian names, numbers, dates and GEL formats",
+          "Compliant subject to UAT",
+          "Normalization, confidence, confirmation and field-level tests.",
+          "Representative corpus/data."
+        ],
+        [
+          "FR-06",
+          "Barge-in and interruption handling",
+          "Compliant",
+          "Streaming turn detection; playback stop target ≤500 ms P95.",
+          "Media interface quality."
+        ],
+        [
+          "FR-07",
+          "Unclear speech/dialect handling",
+          "Compliant subject to UAT",
+          "Clarification, confidence thresholds, retry limit and transfer/close.",
+          "Corpus and acceptance threshold."
+        ],
+        [
+          "FR-08",
+          "Dynamic data-driven conversation",
+          "Compliant",
+          "State machine uses balance, DPD, history, prior PTP and eligible offer references.",
+          "Accurate TBC context."
+        ],
+        [
+          "FR-09",
+          "Identity confirmation before disclosure",
+          "Compliant",
+          "Deterministic verification gate; no voice biometrics in base scope.",
+          "Approved identity policy/API."
+        ],
+        [
+          "FR-10",
+          "Debt and creditor disclosure",
+          "Compliant",
+          "Approved content only after successful identity gate.",
+          "Legal/compliance wording."
+        ],
+        [
+          "FR-11",
+          "Friendly reminder and payment-date discussion",
+          "Compliant",
+          "Versioned script and policy-approved options.",
+          "Approved scripts/rules."
+        ],
+        [
+          "FR-12",
+          "Promise-to-pay capture",
+          "Compliant",
+          "Amount/date validation, read-back, explicit confirmation and CRM write-back.",
+          "TBC fields/API."
+        ],
+        [
+          "FR-13",
+          "Installment/payment plan offers",
+          "Compliant",
+          "Only Bank-provided eligible offers; no model-created terms.",
+          "Policy/offer service."
+        ],
+        [
+          "FR-14",
+          "Payment link by SMS",
+          "Compliant",
+          "Invoke Bank API; TBC authorizes, creates and sends.",
+          "TBC SMS/payment API."
+        ],
+        [
+          "FR-15",
+          "Human escalation",
+          "Compliant",
+          "Warm transfer with verified status, summary and reason; callback fallback.",
+          "TBC queue/routing."
+        ],
+        [
+          "FR-16",
+          "Dispute handling",
+          "Compliant",
+          "Stop negotiation and mandatory priority escalation.",
+          "Approved route."
+        ],
+        [
+          "FR-17",
+          "Hardship/vulnerability handling",
+          "Compliant",
+          "Empathetic approved wording, stop negotiation and escalate.",
+          "Approved policy/queue."
+        ],
+        [
+          "FR-18",
+          "Stop-contact request",
+          "Compliant",
+          "Immediate acknowledgment, termination and suppression write-back.",
+          "TBC suppression handling."
+        ],
+        [
+          "FR-19",
+          "Legal representation/protected cases",
+          "Compliant",
+          "Terminate collection discussion and escalate with minimum data.",
+          "Approved route."
+        ],
+        [
+          "FR-20",
+          "Wrong party/voicemail/no-answer",
+          "Compliant",
+          "Neutral handling, no protected disclosure and policy-limited retry.",
+          "Contact policy."
+        ],
+        [
+          "FR-21",
+          "Business-user tone/persona configuration",
+          "Compliant",
+          "Portal with SSO/RBAC, sandbox, maker-checker and versioning.",
+          "TBC IdP/roles."
+        ],
+        [
+          "FR-22",
+          "Business-user negotiation limits",
+          "Compliant",
+          "Portal references server-side bounds; users cannot exceed Bank limits.",
+          "Authoritative policy service."
+        ],
+        [
+          "FR-23",
+          "Basic call/campaign reporting",
+          "Compliant",
+          "Operational views/exports for funnel, disposition, PTP, transfer, quality and SLA.",
+          "Approved access model."
+        ],
+        [
+          "FR-24",
+          "Monitoring and alerting",
+          "Compliant",
+          "24/7 automated health/error/latency/security monitoring and incident routing.",
+          "Alert destinations."
+        ],
+        [
+          "FR-25",
+          "SLA-backed post-go-live operations",
+          "Compliant subject to contract",
+          "Defined severity, targets, RCA, credits, RTO/RPO and hypercare.",
+          "Final provider confirmation."
+        ],
+        [
+          "FR-26",
+          "Data protection and financial-sector compliance",
+          "Compliant subject to approval",
+          "DPA/DPIA support, subprocessor review, minimization, encryption, access, retention and incident controls.",
+          "TBC/legal approval."
+        ],
+        [
+          "FR-27",
+          "Call recordings/transcripts/audit trail",
+          "Compliant",
+          "Role-restricted evidence with TBC-approved retention and deletion.",
+          "Retention/legal basis."
+        ],
+        [
+          "FR-28",
+          "Additional use cases over time",
+          "Compliant",
+          "Modular provider/integration/configuration architecture and expansion pricing.",
+          "Separate use-case design/UAT."
+        ],
+        [
+          "FR-29",
+          "No single-provider lock-in",
+          "Compliant",
+          "Adapter interfaces for STT/TTS/LLM/media and exportable configuration.",
+          "Fallback approval."
+        ],
+        [
+          "FR-30",
+          "Operational documentation/training",
+          "Compliant",
+          "Runbooks, admin/user guides, training and readiness evidence.",
+          "TBC attendees."
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 147,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "15. General Information (Annex 1)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 149,
+      "style": "ListParagraph",
+      "page_break": false,
+      "text": "A legal form and full name of the bidder: Loialte LLC"
+    },
+    {
+      "kind": "paragraph",
+      "index": 151,
+      "style": "ListParagraph",
+      "page_break": false,
+      "text": "Identification Code: 405277347"
+    },
+    {
+      "kind": "paragraph",
+      "index": 153,
+      "style": "ListParagraph",
+      "page_break": false,
+      "text": "Position, name and surname of the contact person: Ani Baramidze, Head of Loialte Digital"
+    },
+    {
+      "kind": "paragraph",
+      "index": 155,
+      "style": "ListParagraph",
+      "page_break": false,
+      "text": "Email, Telephone: ani.baramidze@loialte.com.ge, 595544088"
+    },
+    {
+      "kind": "paragraph",
+      "index": 157,
+      "style": "ListParagraph",
+      "page_break": false,
+      "text": "Service bank:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 159,
+      "style": "ListParagraph",
+      "page_break": false,
+      "text": "SWIFT code:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 161,
+      "style": "ListParagraph",
+      "page_break": false,
+      "text": "Acc. Number:"
+    },
+    {
+      "kind": "paragraph",
+      "index": 164,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "16. Information on Similar Services (Annex N2)"
+    },
+    {
+      "kind": "paragraph",
+      "index": 165,
+      "style": "ProposalLead",
+      "page_break": false,
+      "text": "The table below presents relevant services delivered by Loialte and the proposed experts."
+    },
+    {
+      "kind": "table",
+      "index": 166,
+      "rows": [
+        [
+          "Name of Service",
+          "Name of Purchaser",
+          "Period",
+          "Comment"
+        ],
+        [
+          "Needs Assessment for SME Digitalisation in Georgia",
+          "GIZ EU4Digital",
+          "December 2025 - March 2026",
+          ""
+        ],
+        [
+          "High-volume customer communication, telephony and CRM automation",
+          "1Komma5grad",
+          "Feb 2026 - Present",
+          ""
+        ],
+        [
+          "AI voice interview preparation assistant",
+          "N/A - Self-initiated project (PrepWise)",
+          "",
+          ""
+        ],
+        [
+          "AI analysis of live customer chats and calls",
+          "Vocal (Starlive)",
+          "Jul 2025 - Mar 2026",
+          ""
+        ],
+        [
+          "AI automation and business-process optimization",
+          "ARCI, delivered through BackWind",
+          "2025-2026",
+          ""
+        ],
+        [
+          "AI CV formatting and recruitment workflow automation",
+          "Digipal, delivered through BackWind",
+          "2024",
+          ""
+        ],
+        [
+          "AI business assistant agent",
+          "N/A - Self-initiated/internal project (ARCENA)",
+          "",
+          ""
+        ],
+        [
+          "AI content and voice-synthesis pipeline",
+          "International clients via Upwork",
+          "2023-2026",
+          ""
+        ],
+        [
+          "AI-powered EdTech web platform",
+          "Skolveda / AI Consulting Space",
+          "Mar 2026 - Present",
+          ""
+        ],
+        [
+          "AI chat-analytics SaaS frontend and authentication",
+          "SatisfAI (Starlive)",
+          "Jul 2025 - Mar 2026",
+          ""
+        ],
+        [
+          "AI football analytics and live-broadcasting platform",
+          "Starlive",
+          "Jan 2024 - Present",
+          ""
+        ],
+        [
+          "Georgian e-commerce and payment-gateway integrations",
+          "GeoPay / Georgian e-commerce clients",
+          "",
+          ""
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 169,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "17. Prince Schedule (Annex N3)"
+    },
+    {
+      "kind": "table",
+      "index": 171,
+      "rows": [
+        [
+          "No.",
+          "Name of the service",
+          "Price",
+          "Comment"
+        ],
+        [
+          "1",
+          "20,000 clients should be called per month",
+          "USD 8,000/Per Month",
+          "Monthly managed service after pilot/go-live for up to 20,000 called customers per month; includes platform operation, monitoring and standard support."
+        ],
+        [
+          "2",
+          "implementation fee (if required)",
+          "USD 18,000",
+          "One-time 10-week implementation scope covering discovery, Georgian conversation design, approved integrations, testing and controlled pilot."
+        ],
+        [
+          "3",
+          "Man-day rate (in case of necessity)",
+          "USD 350 / man-day",
+          "For approved changes, additional integrations or professional services outside the agreed 10-week implementation scope."
+        ],
+        [
+          "",
+          "Total cost",
+          "USD 26,000",
+          "Initial package: 10-week implementation plus the first month of managed service. Additional approved man-days are charged separately."
+        ]
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "index": 173,
+      "style": "ProposalH1",
+      "page_break": false,
+      "text": "18. Closing and Signature"
+    },
+    {
+      "kind": "paragraph",
+      "index": 175,
+      "style": "ProposalH2",
+      "page_break": false,
+      "text": "Authorized signature"
+    },
+    {
+      "kind": "table",
+      "index": 176,
+      "rows": [
+        [
+          "For LLC Loialte",
+          "To be completed by authorized representative"
+        ],
+        [
+          "Name and surname",
+          "Shorena Asabashvili"
+        ],
+        [
+          "Title",
+          "Managing Partner, Director"
+        ],
+        [
+          "Signature",
+          ""
+        ],
+        [
+          "Date",
+          "31/07/2026"
+        ],
+        [
+          "Company stamp",
+          ""
+        ]
+      ]
+    }
+  ],
+  "core_properties": {
+    "creator": "Un-named",
+    "lastModifiedBy": "Microsoft Office User",
+    "revision": "34",
+    "created": "2026-07-30T15:40:00Z",
+    "modified": "2026-07-30T18:10:00Z"
+  },
+  "comments": [],
+  "tracked_changes": [],
+  "auxiliary_text": {
+    "word/footer1.xml": "LLC Loialte - Technical & Commercial Proposal - RFI No. 0007249\tPage 1 of 2"
+  },
+  "image_files": [
+    "word/media/image1.png"
+  ],
+  "section_count": 1
+}
