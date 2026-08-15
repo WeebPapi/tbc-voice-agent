@@ -313,6 +313,66 @@ class PolicyEngine:
         amount = request.slots.get("amount")
         pay_date = request.slots.get("date")
         currency = request.slots.get("currency", "GEL")
+        policy = context.get("ptp_policy") or {}
+        minimum = Decimal(str(policy.get("minimum_amount", "0.01")))
+        max_date = date.fromisoformat(str(policy.get("maximum_date", "2099-12-31")))
+        today = self.as_of
+
+        # Reject an unusable date before asking for a missing amount.
+        if pay_date and not amount:
+            try:
+                d = date.fromisoformat(str(pay_date))
+            except Exception:  # noqa: BLE001
+                return PolicyDecision(
+                    allowed=False,
+                    action="clarify",
+                    next_state=ConversationState.DISCUSSING_OPTIONS,
+                    reason_code="PTP_PARSE_ERROR",
+                    template_key="ptp_need_date",
+                )
+            if d < today or d > max_date:
+                return PolicyDecision(
+                    allowed=False,
+                    action="clarify",
+                    next_state=ConversationState.DISCUSSING_OPTIONS,
+                    reason_code="PTP_OUT_OF_RANGE",
+                    template_key="ptp_out_of_range",
+                )
+            return PolicyDecision(
+                allowed=False,
+                action="clarify",
+                next_state=ConversationState.DISCUSSING_OPTIONS,
+                reason_code="PTP_INCOMPLETE",
+                template_key="ptp_need_amount",
+            )
+
+        if amount and not pay_date:
+            try:
+                amt = Decimal(str(amount))
+            except Exception:  # noqa: BLE001
+                return PolicyDecision(
+                    allowed=False,
+                    action="clarify",
+                    next_state=ConversationState.DISCUSSING_OPTIONS,
+                    reason_code="PTP_PARSE_ERROR",
+                    template_key="ptp_need_amount",
+                )
+            if amt < minimum:
+                return PolicyDecision(
+                    allowed=False,
+                    action="clarify",
+                    next_state=ConversationState.DISCUSSING_OPTIONS,
+                    reason_code="PTP_OUT_OF_RANGE",
+                    template_key="ptp_out_of_range",
+                )
+            return PolicyDecision(
+                allowed=False,
+                action="clarify",
+                next_state=ConversationState.DISCUSSING_OPTIONS,
+                reason_code="PTP_INCOMPLETE",
+                template_key="ptp_need_date",
+            )
+
         if not amount or not pay_date:
             return PolicyDecision(
                 allowed=False,
@@ -327,7 +387,7 @@ class PolicyEngine:
                 action="clarify",
                 next_state=ConversationState.DISCUSSING_OPTIONS,
                 reason_code="PTP_BAD_CURRENCY",
-                template_key="unsupported_discount",
+                template_key="ptp_out_of_range",
             )
         try:
             amt = Decimal(str(amount))
@@ -340,17 +400,13 @@ class PolicyEngine:
                 reason_code="PTP_PARSE_ERROR",
                 template_key="low_confidence_clarify",
             )
-        policy = context.get("ptp_policy") or {}
-        minimum = Decimal(str(policy.get("minimum_amount", "0.01")))
-        max_date = date.fromisoformat(str(policy.get("maximum_date", "2099-12-31")))
-        today = self.as_of
         if amt < minimum or d < today or d > max_date:
             return PolicyDecision(
                 allowed=False,
                 action="clarify",
                 next_state=ConversationState.DISCUSSING_OPTIONS,
                 reason_code="PTP_OUT_OF_RANGE",
-                template_key="unsupported_discount",
+                template_key="ptp_out_of_range",
             )
         return PolicyDecision(
             allowed=True,

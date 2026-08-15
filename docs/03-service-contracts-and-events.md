@@ -59,6 +59,8 @@ The response includes the accepted user turn, assistant text, state, and new eve
 
 `WS /v1/sessions/{session_id}/stream`
 
+English OpenAI/fake push-to-talk path (ADR-008 / ADR-011). Batch audio on `media.stop`.
+
 Client messages:
 
 - `media.start`
@@ -81,6 +83,33 @@ Server messages:
 - `session.ended`
 
 Binary audio frames are preferred for media chunks. If base64 JSON is used for the first slice, document the performance limitation and keep the transport interface independent.
+
+### Georgian streaming voice WebSocket
+
+`WS /v1/sessions/{session_id}/voice`
+
+Isolated ElevenLabs path for the `/ka` console (ADR-011). PCM16 16 kHz incremental audio; partials never trigger policy.
+
+Client messages:
+
+- `media.start`
+- `media.chunk` (base64 PCM) or raw binary PCM frames
+- `media.stop` (ack only; VAD commits on the provider)
+- `user.interrupt`
+- `session.end`
+- `text.turn` (optional text fallback on the same socket)
+
+Server messages:
+
+- `provider.status` (configured flag, model, language, format — never credentials)
+- `transcript.partial`
+- `transcript.final`
+- `assistant.text`
+- `assistant.audio_chunk` (base64 PCM) and/or binary frames
+- `assistant.audio_end`
+- `state.changed` / `policy.decided`
+- `error` (`provider_not_configured`, `stt_failed`, `tts_failed`)
+- `session.ended`
 
 ## 3. Internal policy contract
 
@@ -156,6 +185,7 @@ Sequence is monotonically increasing within a session. Consumers order by `seque
 | `session.started` | policy and prompt versions |
 | `transcript.final` | speaker, text, confidence, timing |
 | `intent.classified` | intent, slots, confidence, model/fake adapter |
+| `slots.normalized` | filled/repaired keys, adapter, confidence; non-PII before/after for amount/date; identity values never logged |
 | `identity.requested` | question-set version and attempt number |
 | `identity.decided` | verified/failed, reason, evidence reference; no raw answers |
 | `policy.decided` | input state, allowed, action, next state, reason code |
@@ -168,6 +198,16 @@ Sequence is monotonically increasing within a session. Consumers order by `seque
 | `transfer.requested` | route, reason, priority |
 | `error.occurred` | component, stable code, retryable, safe action |
 | `session.ended` | disposition, reason, duration, write-back status |
+| `stt.connection_started` | provider, model, language, audio format, sample rate |
+| `stt.partial_received` | provider; timing metadata; no identity answers |
+| `stt.final_received` | provider, confidence, timing; no identity answers in payload |
+| `stt.connection_closed` | provider |
+| `stt.failed` | provider, error category |
+| `tts.started` | provider, model, output format, generation_id, turn_id |
+| `tts.first_audio` | provider, generation_id, time_to_first_audio_ms |
+| `tts.completed` | provider, generation_id, duration_ms |
+| `tts.cancelled` | provider, generation_id, reason |
+| `tts.failed` | provider, generation_id, error category, safe message |
 
 ## 7. Dispositions
 

@@ -5,10 +5,11 @@ from __future__ import annotations
 import asyncio
 import re
 from datetime import date
+from decimal import Decimal
 from typing import Any
 
 from tbc_voice_agent.config import Settings
-from tbc_voice_agent.content import SlotHints, get_language_pack
+from tbc_voice_agent.content import SlotHints, customer_name_mentioned, get_language_pack
 from tbc_voice_agent.domain import (
     ConversationState,
     CreateSessionRequest,
@@ -32,16 +33,19 @@ from tbc_voice_agent.policy.safety import (
     detect_wrong_party,
 )
 from tbc_voice_agent.providers import (
-    FakeLLM,
-    FakeSTT,
-    FakeTTS,
     LanguageModel,
-    OpenAILLM,
-    OpenAISTT,
-    OpenAITTS,
     SpeechToText,
     TextToSpeech,
     validate_llm_response,
+)
+from tbc_voice_agent.providers.factory import build_english_stt, build_english_tts, build_llm
+from tbc_voice_agent.providers.slot_normalizer import (
+    ground_slots,
+    is_valid_birth_day_month,
+    is_valid_id_last4,
+    merge_normalized_slots,
+    needs_normalization,
+    slots_changed,
 )
 
 
@@ -67,23 +71,13 @@ class Orchestrator:
         self._locks: dict[str, asyncio.Lock] = {}
 
     def _build_llm(self) -> LanguageModel:
-        if self.settings.llm_provider == "openai" and self.settings.openai_api_key:
-            return OpenAILLM(self.settings.openai_api_key, self.settings.openai_llm_model)
-        return FakeLLM(self.settings.voice_language)
+        return build_llm(self.settings)
 
     def _build_stt(self) -> SpeechToText:
-        if self.settings.stt_provider == "openai" and self.settings.openai_api_key:
-            return OpenAISTT(self.settings.openai_api_key, self.settings.openai_stt_model)
-        return FakeSTT()
+        return build_english_stt(self.settings)
 
     def _build_tts(self) -> TextToSpeech:
-        if self.settings.tts_provider == "openai" and self.settings.openai_api_key:
-            return OpenAITTS(
-                self.settings.openai_api_key,
-                self.settings.openai_tts_model,
-                self.settings.openai_tts_voice,
-            )
-        return FakeTTS()
+        return build_english_tts(self.settings)
 
     def _lock(self, session_id: str) -> asyncio.Lock:
         if session_id not in self._locks:
@@ -236,6 +230,15 @@ class Orchestrator:
             permitted_facts=permitted_facts,
             language=session.language,
         )
+        # Fail closed on invented classify amounts/dates (e.g. balance injection).
+        grounded_classify = ground_slots(text, llm.slots or {}, permitted_facts)
+        cleaned_slots = dict(llm.slots or {})
+        for key in ("amount", "currency", "date"):
+            if key in grounded_classify:
+                cleaned_slots[key] = grounded_classify[key]
+            else:
+                cleaned_slots.pop(key, None)
+        llm.slots = cleaned_slots
         self.store.append_event(
             session,
             "intent.classified",
@@ -250,6 +253,7 @@ class Orchestrator:
 
         original_intent = llm.intent
         llm = self._enrich_ptp_slots(session, text, llm)
+        llm = await self._maybe_normalize_slots(session, text, llm, permitted_facts)
         llm = self._apply_deterministic_intents(session, text, llm)
         if llm.intent != original_intent:
             self.store.append_event(
@@ -449,7 +453,6 @@ class Orchestrator:
 
     async def _handle_identity(self, session: SessionRecord, text: str, intent: Intent) -> str:
         pack = get_language_pack(session.language)
-        lowered = text.lower().strip()
         step = session.identity.step
 
         if intent == Intent.WRONG_PARTY or detect_wrong_party(text):
@@ -488,8 +491,7 @@ class Orchestrator:
 
         if step == 0:
             pack_conf = pack.classify_confirmation(text)
-            name = (session.display_name or "").strip().lower()
-            name_mentioned = bool(name) and name in lowered
+            name_mentioned = customer_name_mentioned(text, session.display_name)
             if pack_conf.value != "yes" and not name_mentioned:
                 return pack.render_template(
                     "identity_confirm_name", {"display_name": session.display_name}
@@ -505,12 +507,24 @@ class Orchestrator:
 
         if step == 1:
             session.identity.step = 2
-            session.pending_dob = _normalize_dob(text)
+            dob = _normalize_dob(text)
+            if not is_valid_birth_day_month(dob):
+                dob = await self._normalize_identity_form(
+                    session, text, expect_birth_day_month=True
+                )
+                dob = dob or _normalize_dob(text)
+            session.pending_dob = dob
             return pack.render_template("identity_question_customer_id_last4", {})
 
         # step == 2: submit to mock identity
         dob = session.pending_dob or ""
         last4 = _normalize_last4(text)
+        if not is_valid_id_last4(last4):
+            repaired = await self._normalize_identity_form(
+                session, text, expect_id_last4=True
+            )
+            if repaired:
+                last4 = repaired
         self.store.append_event(
             session,
             "identity.requested",
@@ -753,18 +767,57 @@ class Orchestrator:
             return text
 
         if decision.action == "revise_ptp":
+            previous = {
+                k: v
+                for k, v in dict(session.pending_ptp or {}).items()
+                if not str(k).startswith("_")
+            }
             session.pending_ptp = None
-            slots = dict(llm.slots or {})
-            if not slots.get("amount") or not slots.get("date"):
-                parsed = pack.normalize_slots(
-                    user_text,
-                    SlotHints(expect_amount=True, expect_date=True, as_of=self.as_of),
+            # Always re-parse this turn — do not reuse enrich-carried pending as the
+            # "correction" (that caused Aug-17 readback loops after "არა, ოც აგვისტოს").
+            parsed = pack.normalize_slots(
+                user_text,
+                SlotHints(expect_amount=True, expect_date=True, as_of=self.as_of),
+            )
+            slots: dict[str, Any] = {}
+            if parsed.amount:
+                slots["amount"] = parsed.amount
+                slots["currency"] = parsed.currency or "GEL"
+            if parsed.date:
+                slots["date"] = parsed.date
+            # Date-only or amount-only correction: keep the other half from prior PTP.
+            if not slots.get("amount") and previous.get("amount"):
+                slots["amount"] = previous["amount"]
+                slots["currency"] = previous.get("currency") or "GEL"
+            date_cue = any(
+                m in user_text
+                for m in (
+                    "იანვარი",
+                    "თებერვალი",
+                    "მარტი",
+                    "აპრილი",
+                    "მაისი",
+                    "ივნისი",
+                    "ივლისი",
+                    "აგვისტო",
+                    "სექტემბერი",
+                    "ოქტომბერი",
+                    "ნოემბერი",
+                    "დეკემბერი",
+                    "დღეს",
+                    "ხვალ",
+                    "გუშინ",
                 )
-                if parsed.amount:
-                    slots["amount"] = parsed.amount
-                    slots["currency"] = parsed.currency or "GEL"
-                if parsed.date:
-                    slots["date"] = parsed.date
+            ) or bool(
+                re.search(
+                    r"\b(today|tomorrow|yesterday|january|february|march|april|may|june|"
+                    r"july|august|september|october|november|december)\b",
+                    user_text,
+                    re.I,
+                )
+            )
+            if not slots.get("date") and previous.get("date") and not date_cue:
+                slots["date"] = previous["date"]
             if slots.get("amount") and slots.get("date"):
                 session.pending_ptp = {
                     "amount": slots["amount"],
@@ -776,8 +829,23 @@ class Orchestrator:
                 text = pack.render_template("ptp_readback", values)
                 self._approve(session, text, "ptp_readback")
                 return text
-            text = "Understood. Please share the updated amount and date."
-            self._approve(session, text, None)
+            # Partial correction — keep what we have and ask for the rest.
+            if slots.get("amount") or slots.get("date"):
+                session.pending_ptp = {
+                    "amount": slots.get("amount"),
+                    "currency": slots.get("currency") or previous.get("currency") or "GEL",
+                    "date": slots.get("date"),
+                }
+                if slots.get("amount") and not slots.get("date"):
+                    text = pack.render_template("ptp_need_date", values | slots)
+                    self._approve(session, text, "ptp_need_date")
+                    return text
+                if slots.get("date") and not slots.get("amount"):
+                    text = pack.render_template("ptp_need_amount", values | slots)
+                    self._approve(session, text, "ptp_need_amount")
+                    return text
+            text = pack.render_template("discuss_options_prompt", values)
+            self._approve(session, text, "discuss_options_prompt")
             return text
 
         if decision.action == "clarify_ptp":
@@ -962,6 +1030,7 @@ class Orchestrator:
             return text
 
         if decision.template_key:
+            self._persist_partial_ptp(session, llm, decision)
             text = pack.render_template(decision.template_key, values)
             # Prefer template over untrusted LLM prose for safety-critical paths
             self._approve(session, text, decision.template_key)
@@ -1183,49 +1252,299 @@ class Orchestrator:
         }:
             return llm
         lowered = text.lower()
-        if "pay" not in lowered and llm.intent not in {
+        pay_like = (
+            "pay" in lowered
+            or "გადავიხდი" in text
+            or "გადახდა" in text
+            or "დავპირდები" in text
+            or "დავფარო" in text
+            or "მთლიანად" in text
+            or "ბოლომდე" in text
+        )
+        if not pay_like and llm.intent not in {
             Intent.PROMISE_TO_PAY,
             Intent.CORRECT_PTP,
         }:
-            return llm
+            # Still enrich when completing a partial PTP (amount-only or date-only follow-up).
+            pending = session.pending_ptp or {}
+            if not (pending.get("amount") or pending.get("date")):
+                return llm
         pack = get_language_pack(session.language)
         parsed = pack.normalize_slots(
             text,
             SlotHints(expect_amount=True, expect_date=True, as_of=self.as_of),
         )
         slots = _canonical_ptp_slots(llm.slots)
-        if not slots.get("date") and parsed.date:
+        # Carry forward partial slots from a prior clarify turn — but never
+        # override a value freshly parsed from this turn's transcript.
+        pending = session.pending_ptp or {}
+        if parsed.date:
             slots["date"] = parsed.date
-        if not slots.get("amount") and parsed.amount:
+        elif not slots.get("date") and pending.get("date"):
+            slots["date"] = pending["date"]
+        if parsed.amount:
             slots["amount"] = parsed.amount
-            slots["currency"] = parsed.currency or "GEL"
-        if not slots.get("amount") and any(
-            p in lowered for p in ("that", "the balance", "full amount", "all of it")
+            slots["currency"] = parsed.currency or slots.get("currency") or "GEL"
+        elif not slots.get("amount") and pending.get("amount"):
+            slots["amount"] = pending["amount"]
+            slots["currency"] = pending.get("currency") or slots.get("currency") or "GEL"
+        # Explicit balance phrases only — never infer balance from a bare date.
+        if not slots.get("amount") and (
+            any(p in lowered for p in ("that", "the balance", "full amount", "all of it"))
+            or "ბალანსი" in text
+            or "სრულად" in text
+            or "მთლიანად" in text
+            or "ბოლომდე" in text
+            or "დავფარო" in text
         ):
             if session.context and session.context.get("balance"):
                 slots["amount"] = session.context["balance"]["amount"]
                 slots["currency"] = session.context["balance"].get("currency", "GEL")
-        if slots.get("amount") and slots.get("date"):
-            if llm.intent in {Intent.UNKNOWN, Intent.LOW_CONFIDENCE, Intent.REMINDER_ACK}:
+        if slots.get("amount") or slots.get("date"):
+            # Completing a PTP must win over weak/misc LLM labels (e.g. greeting on "ორასის").
+            # Never clobber confirmation / correction while already confirming a PTP.
+            if llm.intent in {
+                Intent.UNKNOWN,
+                Intent.LOW_CONFIDENCE,
+                Intent.REMINDER_ACK,
+                Intent.GREETING,
+            }:
+                llm.intent = Intent.PROMISE_TO_PAY
+            elif (
+                session.state != ConversationState.CONFIRMING_PTP
+                and slots.get("amount")
+                and slots.get("date")
+                and llm.intent
+                not in {
+                    Intent.CONFIRM_YES,
+                    Intent.CONFIRM_NO,
+                    Intent.CORRECT_PTP,
+                    Intent.PROMISE_TO_PAY,
+                    Intent.HARDSHIP,
+                    Intent.DISPUTE,
+                    Intent.STOP_CONTACT,
+                    Intent.WRONG_PARTY,
+                    Intent.ALREADY_PAID,
+                    Intent.ACCEPT_PLAN,
+                    Intent.REQUEST_DISCOUNT,
+                    Intent.REQUEST_PAYMENT_LINK,
+                }
+            ):
                 llm.intent = Intent.PROMISE_TO_PAY
             llm.slots = slots
-            if llm.confidence < 0.7:
+            if llm.confidence < 0.7 and (slots.get("amount") or slots.get("date")):
                 llm.confidence = 0.9
-        elif slots:
-            llm.slots = slots
         return llm
 
+    async def _maybe_normalize_slots(
+        self,
+        session: SessionRecord,
+        text: str,
+        llm: Any,
+        permitted_facts: dict[str, Any],
+    ) -> Any:
+        """LLM-assisted gap fill after deterministic extractors; before safety overlay."""
+        if session.state not in {
+            ConversationState.DISCUSSING_OPTIONS,
+            ConversationState.CONFIRMING_PTP,
+            ConversationState.REMINDER,
+        }:
+            return llm
+        before = dict(llm.slots or {})
+        if not needs_normalization(
+            text=text,
+            state=session.state.value,
+            slots=llm.slots,
+            confidence=float(llm.confidence or 0),
+            pending_ptp=session.pending_ptp,
+        ):
+            return llm
+
+        expect_amount = not bool((llm.slots or {}).get("amount"))
+        expect_date = not bool((llm.slots or {}).get("date"))
+        # When completing partial pending PTP, ask for the missing piece.
+        pending = session.pending_ptp or {}
+        if pending.get("date") and not (llm.slots or {}).get("amount"):
+            expect_amount = True
+        if pending.get("amount") and not (llm.slots or {}).get("date"):
+            expect_date = True
+        if not expect_amount and not expect_date:
+            # Still may need repair when slots look present but confidence is low
+            expect_amount = True
+            expect_date = True
+
+        normalized = await self.llm.normalize(
+            text=text,
+            state=session.state.value,
+            language=session.language,
+            permitted_facts=permitted_facts,
+            expect_amount=expect_amount,
+            expect_date=expect_date,
+        )
+        grounded = ground_slots(text, normalized, permitted_facts)
+        merged, new_intent = merge_normalized_slots(
+            llm.slots, grounded, current_intent=llm.intent
+        )
+        # Re-apply pending carry-forward for fields still empty after merge
+        if not merged.get("date") and pending.get("date"):
+            merged["date"] = pending["date"]
+        if not merged.get("amount") and pending.get("amount"):
+            merged["amount"] = pending["amount"]
+            merged["currency"] = pending.get("currency") or merged.get("currency") or "GEL"
+
+        changed = slots_changed(before, merged)
+        if not changed and new_intent is None:
+            return llm
+
+        llm.slots = merged
+        if new_intent is not None:
+            llm.intent = new_intent
+        if grounded.get("confidence") is not None:
+            llm.confidence = max(float(llm.confidence or 0), float(grounded["confidence"]))
+        elif changed:
+            llm.confidence = max(float(llm.confidence or 0), 0.85)
+
+        if changed:
+            payload: dict[str, Any] = {
+                "fields": changed,
+                "adapter": type(self.llm).__name__,
+                "confidence": llm.confidence,
+            }
+            # Non-PII before/after for amount/date only
+            for key in ("amount", "currency", "date"):
+                if key in changed:
+                    payload[f"before_{key}"] = before.get(key)
+                    payload[f"after_{key}"] = merged.get(key)
+            self.store.append_event(
+                session,
+                "slots.normalized",
+                "slot_normalizer",
+                payload,
+            )
+            if llm.intent in {
+                Intent.UNKNOWN,
+                Intent.LOW_CONFIDENCE,
+                Intent.GREETING,
+                Intent.REMINDER_ACK,
+            } and (merged.get("amount") or merged.get("date")):
+                llm.intent = Intent.PROMISE_TO_PAY
+        return llm
+
+    async def _normalize_identity_form(
+        self,
+        session: SessionRecord,
+        text: str,
+        *,
+        expect_birth_day_month: bool = False,
+        expect_id_last4: bool = False,
+    ) -> str | None:
+        """LLM form extraction for identity; never logs raw or normalized values."""
+        facts = {"as_of_date": self.as_of.isoformat()}
+        if not needs_normalization(
+            text=text,
+            state=session.state.value,
+            slots={},
+            confidence=0.3,
+            expect_identity_dob=expect_birth_day_month,
+            expect_identity_last4=expect_id_last4,
+            birth_day_month=None if expect_birth_day_month else "01-01",
+            id_last4=None if expect_id_last4 else "0000",
+        ):
+            return None
+        normalized = await self.llm.normalize(
+            text=text,
+            state=session.state.value,
+            language=session.language,
+            permitted_facts=facts,
+            expect_birth_day_month=expect_birth_day_month,
+            expect_id_last4=expect_id_last4,
+        )
+        grounded = ground_slots(text, normalized, facts, allow_identity=True)
+        fields: list[str] = []
+        value: str | None = None
+        if expect_birth_day_month and grounded.get("birth_day_month"):
+            fields.append("birth_day_month")
+            value = str(grounded["birth_day_month"])
+        if expect_id_last4 and grounded.get("id_last4"):
+            fields.append("id_last4")
+            value = str(grounded["id_last4"])
+        if fields:
+            self.store.append_event(
+                session,
+                "slots.normalized",
+                "slot_normalizer",
+                {"fields": fields, "adapter": type(self.llm).__name__},
+                redaction={
+                    "contains_pii": True,
+                    "fields_removed": ["text", "birth_day_month", "id_last4"],
+                },
+            )
+        return value
+
     def _template_values(self, session: SessionRecord, llm: Any) -> dict[str, object]:
-        values: dict[str, object] = {"display_name": session.display_name}
+        values: dict[str, object] = {
+            "display_name": session.display_name,
+            "as_of": self.as_of.isoformat(),
+            "minimum_amount": "25.00",
+            "maximum_date": "2099-12-31",
+        }
         if session.context:
             values["balance_amount"] = session.context["balance"]["amount"]
             values["currency"] = session.context["balance"]["currency"]
             values["due_date"] = session.context["due_date"]
+            ptp_policy = session.context.get("ptp_policy") or {}
+            if ptp_policy.get("minimum_amount"):
+                values["minimum_amount"] = str(ptp_policy["minimum_amount"])
+            if ptp_policy.get("maximum_date"):
+                values["maximum_date"] = str(ptp_policy["maximum_date"])
         if session.pending_ptp:
             values.update({k: v for k, v in session.pending_ptp.items() if not k.startswith("_")})
         if llm.slots:
             values.update({k: v for k, v in llm.slots.items() if v is not None})
         return values
+
+    def _persist_partial_ptp(self, session: SessionRecord, llm: Any, decision: Any) -> None:
+        """Keep amount/date across clarify turns so the customer can fill the missing piece."""
+        if decision.template_key not in {
+            "ptp_need_amount",
+            "ptp_need_date",
+            "ptp_out_of_range",
+        }:
+            return
+        slots = _canonical_ptp_slots(llm.slots)
+        partial: dict[str, Any] = dict(session.pending_ptp or {})
+        if decision.reason_code == "PTP_OUT_OF_RANGE":
+            # Drop an unusable date; keep a still-valid amount if present.
+            if slots.get("date"):
+                try:
+                    d = date.fromisoformat(str(slots["date"]))
+                    policy = (session.context or {}).get("ptp_policy") or {}
+                    max_date = date.fromisoformat(
+                        str(policy.get("maximum_date", "2099-12-31"))
+                    )
+                    if d < self.as_of or d > max_date:
+                        slots.pop("date", None)
+                        partial.pop("date", None)
+                except ValueError:
+                    slots.pop("date", None)
+                    partial.pop("date", None)
+            if slots.get("amount"):
+                try:
+                    amt = Decimal(str(slots["amount"]))
+                    policy = (session.context or {}).get("ptp_policy") or {}
+                    minimum = Decimal(str(policy.get("minimum_amount", "0.01")))
+                    if amt < minimum:
+                        slots.pop("amount", None)
+                        partial.pop("amount", None)
+                except Exception:  # noqa: BLE001
+                    slots.pop("amount", None)
+                    partial.pop("amount", None)
+        if slots.get("amount"):
+            partial["amount"] = slots["amount"]
+            partial["currency"] = slots.get("currency") or partial.get("currency") or "GEL"
+        if slots.get("date"):
+            partial["date"] = slots["date"]
+        session.pending_ptp = partial or None
 
     def _require(self, session_id: str) -> SessionRecord:
         session = self.store.get(session_id)
@@ -1265,6 +1584,9 @@ def _canonical_ptp_slots(slots: dict[str, Any] | None) -> dict[str, Any]:
             if out.get(key):
                 out["amount"] = out[key]
                 break
+    # Drop OpenAI echoes of permitted-fact keys — those are not extractions.
+    out.pop("requested_amount", None)
+    out.pop("requested_date", None)
     return out
 
 
@@ -1275,6 +1597,8 @@ _MONTH_ALT = (
 
 
 def _normalize_dob(text: str) -> str:
+    from tbc_voice_agent.content import _ka_fold_mtavruli
+
     months = {
         "january": "01",
         "february": "02",
@@ -1299,7 +1623,24 @@ def _normalize_dob(text: str) -> str:
         "oct": "10",
         "nov": "11",
         "dec": "12",
+        # Synthetic Georgian month names for /ka POC
+        "იანვარი": "01",
+        "თებერვალი": "02",
+        "მარტი": "03",
+        "აპრილი": "04",
+        "მაისი": "05",
+        "ივნისი": "06",
+        "ივლისი": "07",
+        "აგვისტო": "08",
+        "სექტემბერი": "09",
+        "ოქტომბერი": "10",
+        "ნოემბერი": "11",
+        "დეკემბერი": "12",
     }
+    ka_months = (
+        "იანვარი|თებერვალი|მარტი|აპრილი|მაისი|ივნისი|ივლისი|"
+        "აგვისტო|სექტემბერი|ოქტომბერი|ნოემბერი|დეკემბერი"
+    )
     ordinals = {
         "first": 1,
         "second": 2,
@@ -1342,12 +1683,53 @@ def _normalize_dob(text: str) -> str:
         "thirtieth": 30,
         "thirty first": 31,
         "thirty-first": 31,
+        # Georgian day-of-month words (+ common STT truncations)
+        "ერთი": 1,
+        "ორი": 2,
+        "სამი": 3,
+        "ოთხი": 4,
+        "ხუთი": 5,
+        "ექვსი": 6,
+        "შვიდი": 7,
+        "რვა": 8,
+        "ცხრა": 9,
+        "ათი": 10,
+        "თერთმეტი": 11,
+        "თორმეტი": 12,
+        "ცამეტი": 13,
+        "თოთხმეტი": 14,
+        "თხუთმეტი": 15,
+        "ხუთმეტი": 15,  # STT often drops leading თ
+        "თექვსმეტი": 16,
+        "ჩვიდმეტი": 17,
+        "თვრამეტი": 18,
+        "ცხრამეტი": 19,
+        "ოცი": 20,
+        "ოცდაერთი": 21,
+        "ოცდაორი": 22,
+        "ოცდასამი": 23,
+        "ოცდაოთხი": 24,
+        "ოცდახუთი": 25,
+        "ოცდაექვსი": 26,
+        "ოცდაშვიდი": 27,
+        "ოცდარვა": 28,
+        "ოცდაცხრა": 29,
+        "ოცდაათი": 30,
+        "ოცდათერთმეტი": 31,
     }
-    t = text.strip().lower().replace(",", " ")
+    # Preserve Georgian script; only lower Latin portions.
+    raw = _ka_fold_mtavruli(text.strip())
+    t = raw.lower().replace(",", " ")
     t = re.sub(r"(\d+)(st|nd|rd|th)\b", r"\1", t)
-    # Spoken fillers: "January the 9th", "born on the 9th of January"
     t = re.sub(r"\b(the|of|on|my|birthday|birthdate|born)\b", " ", t)
     t = re.sub(r"\s+", " ", t).strip()
+    # Georgian: "15 მარტი"
+    m = re.search(rf"(\d{{1,2}})\s+({ka_months})", raw)
+    if m:
+        return f"{months[m.group(2)]}-{int(m.group(1)):02d}"
+    m = re.search(rf"({ka_months})\s+(\d{{1,2}})", raw)
+    if m:
+        return f"{months[m.group(1)]}-{int(m.group(2)):02d}"
     # "15 March" / "9 January"
     m = re.search(rf"(\d{{1,2}})\s+({_MONTH_ALT})", t)
     if m:
@@ -1360,7 +1742,7 @@ def _normalize_dob(text: str) -> str:
     for phrase, day in sorted(ordinals.items(), key=lambda kv: -len(kv[0])):
         if phrase in t:
             for name, mm in months.items():
-                if name in t:
+                if name in t or name in raw:
                     return f"{mm}-{day:02d}"
             break
     # MM-DD or M-D
@@ -1383,13 +1765,24 @@ _WORD_DIGITS = {
     "seven": "7",
     "eight": "8",
     "nine": "9",
+    # Georgian spoken digits (STT often returns these instead of 0-9)
+    "ნული": "0",
+    "ერთი": "1",
+    "ორი": "2",
+    "სამი": "3",
+    "ოთხი": "4",
+    "ხუთი": "5",
+    "ექვსი": "6",
+    "შვიდი": "7",
+    "რვა": "8",
+    "ცხრა": "9",
 }
 
 
 def _normalize_last4(text: str) -> str:
-    raw = text.strip().lower()
-    # Spoken digits: "zero zero zero one", "oh oh oh one"
-    words = re.findall(r"[a-z0-9]+", raw)
+    raw = text.strip().casefold()
+    # Spoken digits: "zero zero zero one", "ნული ნული ნული ერთი"
+    words = re.findall(r"[a-z0-9ა-ჰ]+", raw, flags=re.IGNORECASE)
     spoken = "".join(_WORD_DIGITS.get(w, w if w.isdigit() else "") for w in words)
     spoken_digits = re.sub(r"\D", "", spoken)
     if len(spoken_digits) >= 4:

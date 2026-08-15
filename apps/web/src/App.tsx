@@ -397,7 +397,12 @@ export default function App() {
   return (
     <div className="app">
       <header className="hero">
-        <h1>TBC Voice Agent</h1>
+        <div className="row" style={{ justifyContent: "space-between" }}>
+          <h1>TBC Voice Agent</h1>
+          <a className="pill" href="/ka">
+            Georgian /ka →
+          </a>
+        </div>
         <p>
           Local synthetic outbound collections demo. Identity is verified before any account
           disclosure. Text mode works without provider credentials.
