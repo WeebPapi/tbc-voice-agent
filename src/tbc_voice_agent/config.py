@@ -39,6 +39,19 @@ class Settings(BaseSettings):
     openai_tts_model: str = "tts-1"
     openai_tts_voice: str = "alloy"
 
+    # ElevenLabs is used only by the /ka Georgian voice path. Never auto-switch
+    # the global English STT/TTS providers when these are set (ADR-011).
+    elevenlabs_api_key: str = ""
+    elevenlabs_stt_model_id: str = "scribe_v2_realtime"
+    elevenlabs_stt_language_code: str = "kat"
+    elevenlabs_tts_model_id: str = "eleven_v3"
+    elevenlabs_voice_id: str = ""
+    elevenlabs_input_sample_rate: int = 16000
+    elevenlabs_tts_output_format: str = "pcm_16000"
+    elevenlabs_connect_timeout_seconds: float = 10.0
+    elevenlabs_turn_timeout_seconds: float = 15.0
+    elevenlabs_zero_retention: bool = False
+
     voice_db_path: str = "data/voice_agent.sqlite"
     mock_db_path: str = "data/mock_tbc.sqlite"
 
@@ -51,6 +64,11 @@ class Settings(BaseSettings):
     @property
     def has_openai(self) -> bool:
         return bool(self.openai_api_key.strip())
+
+    @property
+    def has_elevenlabs(self) -> bool:
+        """True only when both key and voice ID are set — never invent a default voice."""
+        return bool(self.elevenlabs_api_key.strip() and self.elevenlabs_voice_id.strip())
 
     @model_validator(mode="after")
     def enable_openai_when_keyed(self) -> Settings:

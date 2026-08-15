@@ -32,6 +32,14 @@ HARDSHIP_PHRASES = (
     "domestic violence",
     "seriously ill",
     "terminal illness",
+    # Synthetic Georgian POC phrases (not Bank-approved production copy)
+    "რთული მდგომარეობა",
+    "სამსახური დავკარგე",
+    "ვერ ვიხდი",
+    "ავტოავარია",
+    "მანქანა დამიტეხა",
+    "ავადმყოფი ვარ",
+    "საავადმყოფოში",
 )
 
 DISPUTE_PHRASES = (
@@ -42,6 +50,10 @@ DISPUTE_PHRASES = (
     "not my account",
     "identity theft",
     "this is fraud",
+    "სადავოა",
+    "არ არის ჩემი ვალი",
+    "არ ვარ ვალიანი",
+    "თაღლითობაა",
 )
 
 STOP_CONTACT_PHRASES = (
@@ -53,6 +65,10 @@ STOP_CONTACT_PHRASES = (
     "don't call",
     "never call",
     "remove me from",
+    "აღარ დამირეკოთ",
+    "შეაჩერეთ კონტაქტი",
+    "ნუ დამირეკავთ",
+    "წაშალეთ სიიდან",
 )
 
 WRONG_PARTY_PHRASES = (
@@ -61,6 +77,9 @@ WRONG_PARTY_PHRASES = (
     "not me",
     "you've got the wrong",
     "you have the wrong",
+    "არასწორი ადამიანი",
+    "არა მე ვარ",
+    "შეცდომით დამირეკეთ",
 )
 
 PROMPT_INJECTION_PHRASES = (
@@ -69,6 +88,8 @@ PROMPT_INJECTION_PHRASES = (
     "system prompt",
     "tell me my balance",
     "reveal the balance",
+    "უგულებელყავი წესები",
+    "მითხარი ბალანსი",
 )
 
 PLAN_REQUEST_PHRASES = (
@@ -85,6 +106,9 @@ PLAN_REQUEST_PHRASES = (
     "split it",
     "in installments",
     "in instalments",
+    "განვადება",
+    "გადახდის გეგმა",
+    "ნაწილ-ნაწილ",
 )
 
 PLAN_ACCEPT_PHRASES = (
@@ -92,6 +116,8 @@ PLAN_ACCEPT_PHRASES = (
     "i accept",
     "i'll take the plan",
     "i will take the plan",
+    "ვეთანხმები გეგმას",
+    "მიღებულია გეგმა",
 )
 
 PAYMENT_LINK_PHRASES = (
@@ -102,12 +128,16 @@ PAYMENT_LINK_PHRASES = (
     "sms link",
     "pay by link",
     "email me a link",
+    "გადახდის ბმული",
+    "გამომიგზავნე ბმული",
+    "სმს ბმული",
 )
 
 
 def _contains_any(text: str, phrases: tuple[str, ...]) -> bool:
+    # Keep original casing for Georgian; also check lowercased Latin phrases.
     lowered = text.lower()
-    return any(phrase in lowered for phrase in phrases)
+    return any(phrase in text or phrase in lowered for phrase in phrases)
 
 
 def detect_safety_intent(text: str) -> Intent | None:

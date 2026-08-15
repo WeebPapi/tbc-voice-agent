@@ -15,6 +15,12 @@ from tbc_voice_agent.domain import CreateSessionRequest, SessionView, TextTurnRe
 from tbc_voice_agent.integrations.tbc_client import TBCClient
 from tbc_voice_agent.orchestrator import Orchestrator
 from tbc_voice_agent.orchestrator.store import EventStore
+from tbc_voice_agent.orchestrator.voice_runtime import (
+    VoiceSessionRuntime,
+    register_runtime,
+    unregister_runtime,
+)
+from tbc_voice_agent.providers.factory import provider_status
 
 settings = get_settings()
 store = EventStore(settings.voice_db_path)
@@ -73,6 +79,15 @@ async def health() -> dict[str, Any]:
         "mock_tbc": mock_ok,
         "tts": type(orchestrator.tts).__name__,
         "openai_configured": bool(settings.openai_api_key.strip()),
+        "elevenlabs_configured": settings.has_elevenlabs,
+        "elevenlabs": {
+            "configured": settings.has_elevenlabs,
+            "stt_model": settings.elevenlabs_stt_model_id if settings.has_elevenlabs else None,
+            "tts_model": settings.elevenlabs_tts_model_id if settings.has_elevenlabs else None,
+            "language_code": (
+                settings.elevenlabs_stt_language_code if settings.has_elevenlabs else None
+            ),
+        },
     }
 
 
@@ -110,6 +125,7 @@ async def get_session(session_id: str) -> SessionView:
 @app.post("/v1/sessions/{session_id}/end")
 async def end_session(session_id: str) -> SessionView:
     try:
+        await unregister_runtime(session_id)
         session = await orchestrator.end_session(session_id)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Session not found") from exc
@@ -138,7 +154,7 @@ async def text_turn(session_id: str, body: TextTurnRequest) -> dict[str, Any]:
 
 @app.post("/v1/sessions/{session_id}/speak")
 async def speak_text(session_id: str, body: dict[str, Any]):
-    """Synthesize assistant speech for the demo console (mp3 when OpenAI TTS is on)."""
+    """Synthesize assistant speech for the English demo console (mp3 when OpenAI TTS is on)."""
     from fastapi.responses import Response
 
     session = store.get(session_id)
@@ -152,7 +168,6 @@ async def speak_text(session_id: str, body: dict[str, Any]):
     audio = await orchestrator.tts.synthesize(text, session.language)
     if not audio:
         return Response(status_code=204)
-    # Fake/fallback may return UTF-8 text bytes — use browser speech instead.
     try:
         audio.decode("utf-8")
         return Response(status_code=204)
@@ -163,12 +178,12 @@ async def speak_text(session_id: str, body: dict[str, Any]):
 
 @app.get("/v1/providers")
 async def providers() -> dict[str, Any]:
-    return {
-        "stt": type(orchestrator.stt).__name__,
-        "llm": type(orchestrator.llm).__name__,
-        "tts": type(orchestrator.tts).__name__,
-        "openai_configured": bool(settings.openai_api_key.strip()),
-    }
+    return provider_status(
+        settings,
+        english_stt=orchestrator.stt,
+        english_tts=orchestrator.tts,
+        llm=orchestrator.llm,
+    )
 
 
 @app.get("/v1/campaigns")
@@ -216,6 +231,7 @@ async def list_transfers() -> dict[str, Any]:
 
 @app.websocket("/v1/sessions/{session_id}/stream")
 async def stream(session_id: str, websocket: WebSocket) -> None:
+    """English browser voice — batch media (OpenAI/Fake). Unchanged for ADR-011."""
     session = store.get(session_id)
     if not session:
         await websocket.close(code=4404)
@@ -286,7 +302,6 @@ async def stream(session_id: str, websocket: WebSocket) -> None:
                 audio = await orchestrator.tts.synthesize(
                     result.assistant_text, session.language
                 )
-                # Prefer binary frames for PCM/audio bytes
                 await websocket.send_bytes(audio)
                 await websocket.send_json({"type": "assistant.audio_end"})
                 for event in result.events:
@@ -322,6 +337,96 @@ async def stream(session_id: str, websocket: WebSocket) -> None:
                 )
     except WebSocketDisconnect:
         return
+
+
+@app.websocket("/v1/sessions/{session_id}/voice")
+async def voice_stream(session_id: str, websocket: WebSocket) -> None:
+    """Georgian /ka streaming voice — ElevenLabs STT/TTS (ADR-011)."""
+    session = store.get(session_id)
+    if not session:
+        await websocket.close(code=4404)
+        return
+    await websocket.accept()
+
+    async def send_json(payload: dict[str, Any]) -> None:
+        await websocket.send_json(payload)
+
+    async def send_bytes(chunk: bytes) -> None:
+        await websocket.send_bytes(chunk)
+
+    runtime = VoiceSessionRuntime.create(
+        session_id,
+        settings,
+        orchestrator,
+        store,
+        send_json=send_json,
+        send_bytes=send_bytes,
+    )
+    register_runtime(runtime)
+    try:
+        await runtime.start_stt()
+        await websocket.send_json(
+            {
+                "type": "provider.status",
+                "configured": runtime._configured,
+                "stt": type(runtime.stt).__name__ if runtime.stt else "unconfigured",
+                "tts": type(runtime.tts).__name__ if runtime.tts else "unconfigured",
+                "language": session.language,
+                "stt_model": settings.elevenlabs_stt_model_id if settings.has_elevenlabs else None,
+                "tts_model": settings.elevenlabs_tts_model_id if settings.has_elevenlabs else None,
+                "language_code": (
+                    settings.elevenlabs_stt_language_code if settings.has_elevenlabs else None
+                ),
+                "audio_format": (
+                    settings.elevenlabs_tts_output_format if settings.has_elevenlabs else None
+                ),
+            }
+        )
+        while True:
+            message = await websocket.receive()
+            if message.get("type") == "websocket.disconnect":
+                break
+            if "bytes" in message and message["bytes"] is not None:
+                await runtime.push_audio(message["bytes"])
+                continue
+            raw = message.get("text")
+            if not raw:
+                continue
+            data = json.loads(raw)
+            msg_type = data.get("type")
+            if msg_type == "media.start":
+                await runtime.set_listening(True)
+                await websocket.send_json(
+                    {"type": "state.changed", "state": session.state.value}
+                )
+            elif msg_type == "media.chunk":
+                chunk_b64 = data.get("data", "")
+                if chunk_b64:
+                    await runtime.push_audio(base64.b64decode(chunk_b64))
+            elif msg_type == "media.stop":
+                await runtime.set_listening(False)
+                await runtime.commit_audio()
+                await websocket.send_json({"type": "media.stop.ack"})
+            elif msg_type == "user.interrupt":
+                await runtime.interrupt(reason="user_interrupt")
+            elif msg_type == "speak_text":
+                # Replay approved assistant text (greeting) over TTS only.
+                text = (data.get("text") or "").strip()
+                if text:
+                    await runtime.speak_approved(text)
+            elif msg_type == "session.end":
+                await runtime.aclose()
+                await orchestrator.end_session(session_id)
+                await websocket.send_json({"type": "session.ended"})
+                break
+            elif msg_type == "text.turn":
+                await runtime.handle_text_turn(
+                    data.get("text", ""), data.get("client_turn_id")
+                )
+    except WebSocketDisconnect:
+        pass
+    finally:
+        await unregister_runtime(session_id)
 
 
 def create_app(custom_settings: Settings | None = None) -> FastAPI:

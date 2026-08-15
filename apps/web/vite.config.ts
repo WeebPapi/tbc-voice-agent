@@ -11,4 +11,9 @@ export default defineConfig({
       "/health": "http://127.0.0.1:8000",
     },
   },
+  preview: {
+    host: "127.0.0.1",
+  },
+  // SPA fallback so /ka serves index.html in preview/build.
+  appType: "spa",
 });
